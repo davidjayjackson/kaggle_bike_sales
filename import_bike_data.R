@@ -117,3 +117,12 @@ orders$createdat <- ymd(orders$changedat)
 
 dbWriteTable(con, "orders",orders ,overwrite=TRUE)
 dbListFields(con,"orders")
+
+##
+
+product_text <- read_xlsx("./bikesales/ProductTexts.xlsx",
+                    col_types = c("text")) %>% 
+  clean_names() %>% remove_empty(which =c("rows","cols"))
+
+dbWriteTable(con, "product_text",product_text ,overwrite=TRUE)
+dbListFields(con,"product_text")
