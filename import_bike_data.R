@@ -39,8 +39,13 @@ partners <- read_xlsx("./bikesales/BusinessPartners.xlsx",
 partners$createdat <- ymd(partners$createdat)
 partners$changedat <- ymd(partners$changedat)
 
+business <- partners %>% left_join(address)
+
 dbWriteTable(con, "partners",partners ,overwrite=TRUE)
+dbWriteTable(con, "business",business ,overwrite=TRUE)
 dbListFields(con,"partners")
+
+
 
 ##
 employees <- read_xlsx("./bikesales/Employees.xlsx",
@@ -53,9 +58,11 @@ employees$fullname <-  paste(
                     employees$name_middle,
                     employees$name_last, sep = " ")
 
-
+employee_detail <-employees %>% inner_join(address,by=c("addressid"))
 dbWriteTable(con, "employees",employees ,overwrite=TRUE)
+dbWriteTable(con, "employee_detail",employee_detail,overwrite=TRUE)
 dbListFields(con,"employees")
+
 
 ##
 
@@ -90,6 +97,14 @@ dbListFields(con,"products")
 
 ##
 
+product_text <- read_xlsx("./bikesales/ProductTexts.xlsx",
+                          col_types = c("text")) %>% 
+  clean_names() %>% remove_empty(which =c("rows","cols"))
+
+dbWriteTable(con, "product_text",product_text ,overwrite=TRUE)
+dbListFields(con,"product_text")
+##
+
 order_item <- read_xlsx("./bikesales/SalesOrderItems.xlsx",
                            col_types = c("text")) %>% 
   clean_names() %>% remove_empty(which =c("rows","cols"))
@@ -112,17 +127,16 @@ orders <- read_xlsx("./bikesales/SalesOrders.xlsx",
 orders$grossamount <- as.numeric(orders$grossamount)
 orders$netamount <- as.numeric(orders$netamount)
 orders$taxamount <- as.numeric(orders$taxamount)
-orders$createdat <- ymd(orders$changedat)
+orders$createdat <- ymd(orders$createdat)
+orders$changedat <- ymd(orders$changedat)
+
 
 
 dbWriteTable(con, "orders",orders ,overwrite=TRUE)
 dbListFields(con,"orders")
 
-##
 
-product_text <- read_xlsx("./bikesales/ProductTexts.xlsx",
-                    col_types = c("text")) %>% 
-  clean_names() %>% remove_empty(which =c("rows","cols"))
+full_orders <- orders %>% 
+    inner_join(order_item,by=c("salesorderid"))
 
-dbWriteTable(con, "product_text",product_text ,overwrite=TRUE)
-dbListFields(con,"product_text")
+dbWriteTable(con, "full_orders",full_orders ,overwrite=TRUE)
