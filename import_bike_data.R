@@ -39,7 +39,7 @@ partners <- read_xlsx("./bikesales/BusinessPartners.xlsx",
 partners$createdat <- ymd(partners$createdat)
 partners$changedat <- ymd(partners$changedat)
 
-business <- partners %>% left_join(address)
+business <- partners %>% inner_join(address)  %>% clean_names()
 
 dbWriteTable(con, "partners",partners ,overwrite=TRUE)
 dbWriteTable(con, "business",business ,overwrite=TRUE)
@@ -58,7 +58,7 @@ employees$fullname <-  paste(
                     employees$name_middle,
                     employees$name_last, sep = " ")
 
-employee_detail <-employees %>% inner_join(address,by=c("addressid"))
+employee_detail <-employees %>% inner_join(address,by=c("addressid"))  %>% clean_names()
 dbWriteTable(con, "employees",employees ,overwrite=TRUE)
 dbWriteTable(con, "employee_detail",employee_detail,overwrite=TRUE)
 dbListFields(con,"employees")
@@ -77,9 +77,13 @@ category$createdat <- ymd(category$createdat)
 category_text <- read_xlsx("./bikesales/ProductCategoryText.xlsx",
                        col_types = c("text")) %>% 
                         clean_names() %>% remove_empty(which =c("rows","cols"))
-
+category_detail <- category %>% inner_join(category_text)  %>% clean_names()
 dbWriteTable(con, "category_text",category_text ,overwrite=TRUE)
-dbListFields(con,"category_text")
+dbWriteTable(con, "category_detail",category_detail ,overwrite=TRUE)
+
+
+
+dbListFields(con,"category_detail")
 
 ##
 
@@ -101,8 +105,11 @@ product_text <- read_xlsx("./bikesales/ProductTexts.xlsx",
                           col_types = c("text")) %>% 
   clean_names() %>% remove_empty(which =c("rows","cols"))
 
+product_detail <- products %>% inner_join(product_text)  %>% clean_names()
+
 dbWriteTable(con, "product_text",product_text ,overwrite=TRUE)
-dbListFields(con,"product_text")
+dbWriteTable(con, "product_detail",product_detail ,overwrite=TRUE)
+dbListFields(con,"product_detail")
 ##
 
 order_item <- read_xlsx("./bikesales/SalesOrderItems.xlsx",
@@ -131,12 +138,11 @@ orders$createdat <- ymd(orders$createdat)
 orders$changedat <- ymd(orders$changedat)
 
 
-
 dbWriteTable(con, "orders",orders ,overwrite=TRUE)
 dbListFields(con,"orders")
 
 
 full_orders <- orders %>% 
-    inner_join(order_item,by=c("salesorderid"))
+    inner_join(order_item,by=c("salesorderid")) %>% clean_names()
 
 dbWriteTable(con, "full_orders",full_orders ,overwrite=TRUE)
